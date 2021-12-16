@@ -4,4 +4,11 @@ function g_showLoading(){
 	return idx;
 }
 //salt
-var g_passsword_salt="1a2b3c4d"
+const g_password_salt="1a2b3c4d"
+
+function g_getQueryString(name) {
+	let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+	let r = window.location.search.substr(1).match(reg);
+	if (r != null) return unescape(r[2]);
+	return null;
+}

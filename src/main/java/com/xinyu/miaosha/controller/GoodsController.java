@@ -2,8 +2,10 @@ package com.xinyu.miaosha.controller;
 
 import com.xinyu.miaosha.domain.MiaoshaUser;
 import com.xinyu.miaosha.redis.GoodsKey;
+import com.xinyu.miaosha.result.Result;
 import com.xinyu.miaosha.service.GoodsService;
 import com.xinyu.miaosha.service.RedisService;
+import com.xinyu.miaosha.vo.GoodsDetailVo;
 import com.xinyu.miaosha.vo.GoodsVo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -69,9 +71,45 @@ public class GoodsController {
         return html;
     }
 
-    @RequestMapping(value = "/to_detail/{goodsId}", produces = "text/html")
+    @RequestMapping(value = "/to_detail/{goodsId}")
     @ResponseBody
-    public String detail(HttpServletRequest request, HttpServletResponse response, Model model, MiaoshaUser user,
+    public Result<GoodsDetailVo> detail(HttpServletRequest request, HttpServletResponse response, MiaoshaUser user,
+                                        @PathVariable("goodsId")long goodsId) throws IOException {
+        if (user == null) {
+            //request.getRequestDispatcher("/login/to_login").forward(request, response);
+            response.sendRedirect("/login/to_login");
+            return null;
+        }
+        GoodsVo goods = goodsService.getGoodsVoByGoodsId(goodsId);
+
+        long startDate = goods.getStartDate().getTime();
+        long endDate = goods.getEndDate().getTime();
+        long now = System.currentTimeMillis();
+
+        int miaoshaStatus;
+        int remainSeconds;
+        if (now < startDate) {
+            miaoshaStatus = 0;
+            remainSeconds = (int)((startDate - now)/1000);
+        } else if (now > endDate) {
+            miaoshaStatus = 2;
+            remainSeconds = -1;
+        } else {
+            miaoshaStatus = 1;
+            remainSeconds = 0;
+        }
+        GoodsDetailVo goodsDetailVo = new GoodsDetailVo();
+        goodsDetailVo.setGoodsVo(goods);
+        goodsDetailVo.setMiaoshaStatus(miaoshaStatus);
+        goodsDetailVo.setRemainSeconds(remainSeconds);
+        goodsDetailVo.setUser(user);
+
+        return Result.success(goodsDetailVo);
+    }
+
+    @RequestMapping(value = "/to_detail2/{goodsId}", produces = "text/html")
+    @ResponseBody
+    public String detail2(HttpServletRequest request, HttpServletResponse response, Model model, MiaoshaUser user,
                          @PathVariable("goodsId")long goodsId) throws IOException {
         if (user == null) {
             //request.getRequestDispatcher("/login/to_login").forward(request, response);

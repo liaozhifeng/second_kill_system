@@ -64,7 +64,7 @@
         //显示加载中, common.js调用layer.js提供的
         g_showLoading();
         const inputPassword = $("#password").val();
-        const salt = g_passsword_salt;
+        const salt = g_password_salt;
         const str = "" + salt.charAt(0) + salt.charAt(2) + inputPassword + salt.charAt(5) + salt.charAt(4);
         const password = md5(str)
         $.ajax({
