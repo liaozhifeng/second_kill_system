@@ -23,7 +23,7 @@ public class OrderService {
 
     public MiaoshaOrder getMiaoshaOrderByUserIdGoodsId(Long userId, long goodsId) {
 //        return orderDao.getMiaoshaOrderByUserIdGoodsId(userId, goodsId);
-        return redisService.get(OrderKey.getMiaoshaOrderByUidGid,userId + "" + goodsId, MiaoshaOrder.class );
+        return redisService.get(OrderKey.getMiaoshaOrderByUidGid,userId + "_" + goodsId, MiaoshaOrder.class );
     }
 
     @Transactional

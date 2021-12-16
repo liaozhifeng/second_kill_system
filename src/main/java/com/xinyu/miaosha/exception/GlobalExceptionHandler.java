@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 
 @ControllerAdvice
@@ -27,4 +28,7 @@ public class GlobalExceptionHandler {
     public Result<String> globalExceptionHandler(GlobalException e) {
         return Result.error(e.getMsg());
     }
+//
+//    @ExceptionHandler(value = SQLIntegrityConstraintViolationException.class)
+//    public Result<String> handleRe
 }

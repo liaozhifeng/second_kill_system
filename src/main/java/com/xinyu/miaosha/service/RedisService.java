@@ -51,7 +51,7 @@ public class RedisService {
         return redisTemplate.opsForValue().decrement(realKey);
     }
 
-    private <T> String beanToString(T value) {
+    public static  <T> String beanToString(T value) {
         if (value == null)
             return null;
         Class<?> clazz = value.getClass();
@@ -67,7 +67,7 @@ public class RedisService {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T stringToBean(String str, Class<T> clazz) {
+    public static  <T> T stringToBean(String str, Class<T> clazz) {
         if (!StringUtils.hasLength(str) || clazz == null) {
             return null;
         } else if (clazz == int.class || clazz == Integer.class) {
