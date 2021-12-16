@@ -1,15 +1,22 @@
 package com.xinyu.miaosha.controller;
 
 import com.xinyu.miaosha.domain.MiaoshaUser;
+import com.xinyu.miaosha.redis.GoodsKey;
 import com.xinyu.miaosha.service.GoodsService;
+import com.xinyu.miaosha.service.RedisService;
 import com.xinyu.miaosha.vo.GoodsVo;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.thymeleaf.context.WebContext;
+import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -27,20 +34,44 @@ public class GoodsController {
     @Autowired
     GoodsService goodsService;
 
-    @RequestMapping("/to_list")
-    public String toList(HttpServletRequest request, HttpServletResponse response, Model model, MiaoshaUser user) throws ServletException, IOException {
+    @Autowired
+    RedisService redisService;
+
+    @Autowired
+    ThymeleafViewResolver thymeleafViewResolver;
+
+    @Autowired
+    ApplicationContext applicationContext;
+
+    @RequestMapping(value = "/to_list", produces = "text/html")
+    @ResponseBody
+    public String toList(HttpServletRequest request, HttpServletResponse response, Model model, MiaoshaUser user)
+            throws ServletException, IOException {
         if (user == null) {
             //request.getRequestDispatcher("/login/to_login").forward(request, response);
             response.sendRedirect("/login/to_login");
             return null;
         }
+        //取缓存
+        String html = redisService.get(GoodsKey.getGoodsList, "", String.class);
+        if (!StringUtils.isBlank(html)) {
+            return html;
+        }
+        //获取数据，手动渲染
         List<GoodsVo> goodsVos = goodsService.listGoodsVo();
         model.addAttribute("goodsList", goodsVos);
-        return "goods_list";
+        WebContext context = new WebContext(request, response, request.getServletContext(),
+                request.getLocale(), model.asMap());
+        html = thymeleafViewResolver.getTemplateEngine().process("goods_list", context);
+        if (StringUtils.isNotBlank(html)) {
+            redisService.set(GoodsKey.getGoodsList, "", html);
+        }
+        return html;
     }
 
-    @RequestMapping("/to_detail/{goodsId}")
-    public String detail(HttpServletResponse response, Model model, MiaoshaUser user,
+    @RequestMapping(value = "/to_detail/{goodsId}", produces = "text/html")
+    @ResponseBody
+    public String detail(HttpServletRequest request, HttpServletResponse response, Model model, MiaoshaUser user,
                          @PathVariable("goodsId")long goodsId) throws IOException {
         if (user == null) {
             //request.getRequestDispatcher("/login/to_login").forward(request, response);
@@ -48,6 +79,13 @@ public class GoodsController {
             return null;
         }
         model.addAttribute("user", user);
+
+        String html = redisService.get(GoodsKey.getGoodsDetail, "" + goodsId, String.class);
+        if (StringUtils.isNotBlank(html)) {
+            return html;
+        }
+
+        //手动渲染
         GoodsVo goods = goodsService.getGoodsVoByGoodsId(goodsId);
         model.addAttribute("goods", goods);
 
@@ -70,7 +108,13 @@ public class GoodsController {
         model.addAttribute("miaoshaStatus", miaoshaStatus);
         model.addAttribute("remainSeconds", remainSeconds);
 
-        return "goods_detail";
+        WebContext context = new WebContext(request, response, request.getServletContext(),
+                request.getLocale(), model.asMap());
+        html = thymeleafViewResolver.getTemplateEngine().process("goods_detail", context);
+        if (StringUtils.isNotBlank(html)) {
+            redisService.set(GoodsKey.getGoodsDetail, "" + goodsId, html);
+        }
+        return html;
     }
 
 }
