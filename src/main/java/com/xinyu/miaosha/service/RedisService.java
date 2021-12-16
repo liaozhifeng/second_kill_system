@@ -7,6 +7,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.concurrent.TimeUnit;
+
 @Service
 public class RedisService {
 
@@ -29,7 +31,7 @@ public class RedisService {
         if (seconds <= 0) {
             redisTemplate.opsForValue().set(realKey, str);
         } else  {
-            redisTemplate.opsForValue().set(realKey, str, seconds);
+            redisTemplate.opsForValue().set(realKey, str, seconds, TimeUnit.SECONDS);
         }
         return true;
     }

@@ -72,7 +72,7 @@
                 orderId: orderId
             },
             success: function (data) {
-                if (data.code === '0') {
+                if (data.code === 0) {
                     render(data.data)
                 }
             },
@@ -88,7 +88,7 @@
         $("#goodsName").text(goods.goodsName);
         $("#goodsImg").attr("src", goods.goodsImg);
         $("#orderPrice").text(order.goodsPrice);
-        $("#createDate").text(new Date(order.createDate).format("yyyy-MM-dd hh:mm:ss"));
+        $("#createDate").text(new Date(order.createDate).toLocaleString());
         let status = "";
         if(order.status == 0){
             status = "未支付"

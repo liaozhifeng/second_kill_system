@@ -99,7 +99,7 @@ public class GoodsController {
             remainSeconds = 0;
         }
         GoodsDetailVo goodsDetailVo = new GoodsDetailVo();
-        goodsDetailVo.setGoodsVo(goods);
+        goodsDetailVo.setGoods(goods);
         goodsDetailVo.setMiaoshaStatus(miaoshaStatus);
         goodsDetailVo.setRemainSeconds(remainSeconds);
         goodsDetailVo.setUser(user);

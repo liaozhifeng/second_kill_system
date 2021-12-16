@@ -33,11 +33,11 @@ public class GoodsDetailVo {
         this.remainSeconds = remainSeconds;
     }
 
-    public GoodsVo getGoodsVo() {
+    public GoodsVo getGoods() {
         return goods;
     }
 
-    public void setGoodsVo(GoodsVo goodsVo) {
+    public void setGoods(GoodsVo goodsVo) {
         this.goods = goodsVo;
     }
 }
