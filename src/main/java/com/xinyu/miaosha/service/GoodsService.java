@@ -20,10 +20,11 @@ public class GoodsService {
     public GoodsVo getGoodsVoByGoodsId(long goodsId) {
         return goodsDao.getGoodsVoByGoodsId(goodsId);
     }
-    public void reduceStock(GoodsVo goodsVo) {
+    public boolean reduceStock(GoodsVo goodsVo) {
         MiaoshaGoods goods = new MiaoshaGoods();
         goods.setGoodsId(goodsVo.getId());
         //为什么不直接传一个id就好
-        goodsDao.reduceStock(goods);
+        int ret = goodsDao.reduceStock(goods);
+        return ret > 0;
     }
 }

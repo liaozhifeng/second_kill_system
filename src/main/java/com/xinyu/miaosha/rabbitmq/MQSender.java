@@ -1,5 +1,6 @@
 package com.xinyu.miaosha.rabbitmq;
 
+import com.xinyu.miaosha.domain.MiaoshaMessage;
 import com.xinyu.miaosha.service.RedisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,5 +50,12 @@ public class MQSender {
         properties.setHeader("header2", "value2");
         Message headers = new Message(msg.getBytes(), properties);
         amqpTemplate.convertAndSend(MQConfig.HEADERS_EXCHANGE, "", headers);
+    }
+
+    public void sendMiaoshaMessage(MiaoshaMessage message) {
+        String msg = RedisService.beanToString(message);
+        log.info("send message" + msg);
+        //使用direct模式
+        amqpTemplate.convertAndSend(MQConfig.MIAOSHA_QUEUE, msg);
     }
 }
