@@ -27,4 +27,25 @@ public class SampleController {
         sender.send("hello rabbitMq");
         return Result.success("hello");
     }
+
+    @RequestMapping("/topic")
+    @ResponseBody
+    public Result<String> topicMq() {
+        sender.sendTopic("topic rabbitMq");
+        return Result.success("hello");
+    }
+
+    @RequestMapping("/fanout")
+    @ResponseBody
+    public Result<String> fanoutMq() {
+        sender.sendFanout("fanout rabbitMq");
+        return Result.success("fanout");
+    }
+
+    @RequestMapping("/headers")
+    @ResponseBody
+    public Result<String> headersMq() {
+        sender.sendHeaders("headers rabbitMq");
+        return Result.success("headers");
+    }
 }
