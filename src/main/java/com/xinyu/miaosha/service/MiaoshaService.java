@@ -58,4 +58,13 @@ public class MiaoshaService {
     private boolean getGoodsOver(long goodsId) {
         return redisService.exists(MiaoshaKey.isOver, "" + goodsId);
     }
+
+    public boolean checkPath(String path, Long id, long goodsId) {
+        if (id == null || path == null)
+            return false;
+        String oldPath = redisService.get(MiaoshaKey.getMiaoshaPath, "" + id + "_" + goodsId, String.class);
+        if (oldPath == null)
+            return false;
+        return oldPath.equals(path);
+    }
 }

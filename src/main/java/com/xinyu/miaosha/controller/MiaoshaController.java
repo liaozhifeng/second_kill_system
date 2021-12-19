@@ -6,12 +6,15 @@ import com.xinyu.miaosha.domain.MiaoshaUser;
 import com.xinyu.miaosha.domain.OrderInfo;
 import com.xinyu.miaosha.rabbitmq.MQSender;
 import com.xinyu.miaosha.redis.GoodsKey;
+import com.xinyu.miaosha.redis.MiaoshaKey;
 import com.xinyu.miaosha.result.CodeMsg;
 import com.xinyu.miaosha.result.Result;
 import com.xinyu.miaosha.service.GoodsService;
 import com.xinyu.miaosha.service.MiaoshaService;
 import com.xinyu.miaosha.service.OrderService;
 import com.xinyu.miaosha.service.RedisService;
+import com.xinyu.miaosha.utils.Md5Util;
+import com.xinyu.miaosha.utils.UUIDUtil;
 import com.xinyu.miaosha.vo.GoodsVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,13 +51,19 @@ public class MiaoshaController implements InitializingBean {
 
     public static Logger log = LoggerFactory.getLogger(MiaoshaController.class);
 
-    @PostMapping("/do_miaosha")
+    @PostMapping("/{path}/do_miaosha")
     @ResponseBody
     public Result<Integer> doMiaosha(Model model, MiaoshaUser user,
-                            @RequestParam("goodsId")long goodsId) {
+                            @RequestParam("goodsId")long goodsId,
+                                     @PathVariable("path") String path) {
         model.addAttribute("user", user);
         if (user == null) {
             return Result.error(CodeMsg.SESSION_ERROR);
+        }
+
+        boolean check = miaoshaService.checkPath(path, user.getId(), goodsId);
+        if (!check) {
+            return Result.error(CodeMsg.REQUEST_ILLEGAL);
         }
         boolean over = localOverMap.get(goodsId);
         if (over) {
@@ -133,5 +142,17 @@ public class MiaoshaController implements InitializingBean {
             log.info(String.valueOf(goods));
             redisService.set(GoodsKey.getMiaoshaGoodsStock, "" + goods.getId(), goods.getStockCount());
         }
+    }
+
+    @GetMapping("/miaosha/path")
+    @ResponseBody
+    public Result<String> getPath(Model model, MiaoshaUser user,
+                                  @RequestParam("goodsId") long goodsId) {
+        if (user == null) {
+            return Result.error(CodeMsg.SESSION_ERROR);
+        }
+        String str = Md5Util.md5(UUIDUtil.uuid() + "123456");
+        redisService.set(MiaoshaKey.getMiaoshaPath, "" + user.getId() + "_" + goodsId, str);
+        return Result.success(str);
     }
 }
