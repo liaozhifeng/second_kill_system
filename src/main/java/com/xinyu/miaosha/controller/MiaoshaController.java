@@ -1,10 +1,12 @@
 package com.xinyu.miaosha.controller;
 
+import com.xinyu.miaosha.access.AccessLimit;
 import com.xinyu.miaosha.domain.MiaoshaMessage;
 import com.xinyu.miaosha.domain.MiaoshaOrder;
 import com.xinyu.miaosha.domain.MiaoshaUser;
 import com.xinyu.miaosha.domain.OrderInfo;
 import com.xinyu.miaosha.rabbitmq.MQSender;
+import com.xinyu.miaosha.redis.AccessKey;
 import com.xinyu.miaosha.redis.GoodsKey;
 import com.xinyu.miaosha.redis.MiaoshaKey;
 import com.xinyu.miaosha.result.CodeMsg;
@@ -148,14 +150,16 @@ public class MiaoshaController implements InitializingBean {
         }
     }
 
+    @AccessLimit(seconds = 5, maxCount = 5, needLogin = true)
     @GetMapping("/path")
     @ResponseBody
-    public Result<String> getPath(Model model, MiaoshaUser user,
+    public Result<String> getPath(MiaoshaUser user,
                                   @RequestParam("goodsId") long goodsId,
                                   @RequestParam("verifyCode") int verifyCode) {
         if (user == null) {
             return Result.error(CodeMsg.SESSION_ERROR);
         }
+
         Integer ans = redisService.get(MiaoshaKey.getVerifyCode, user.getId() + "," + goodsId, Integer.class);
         if (ans == null || ans != verifyCode) {
             return Result.error(CodeMsg.REQUEST_ILLEGAL);
