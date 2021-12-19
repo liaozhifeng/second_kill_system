@@ -58,6 +58,7 @@ public class MiaoshaUserService {
         }
         String mobile = loginVo.getMobile();
         String formPassword = loginVo.getPassword();
+        //把用户信息存储到redis中, 这样就不用每次登录都去访问mysql了
         MiaoshaUser user = getById(Long.parseLong(mobile));
         if (user == null) {
             throw new GlobalException(CodeMsg.MOBILE_NOT_EXIST);

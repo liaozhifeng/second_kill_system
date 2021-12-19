@@ -51,6 +51,10 @@ public class RedisService {
         return redisTemplate.opsForValue().decrement(realKey);
     }
 
+    public <T> Boolean delete(KeyPrefix prefix, String key) {
+        String realKey = prefix.getPrefix() + key;
+        return redisTemplate.delete(realKey);
+    }
     public static  <T> String beanToString(T value) {
         if (value == null)
             return null;

@@ -24,6 +24,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -144,15 +148,41 @@ public class MiaoshaController implements InitializingBean {
         }
     }
 
-    @GetMapping("/miaosha/path")
+    @GetMapping("/path")
     @ResponseBody
     public Result<String> getPath(Model model, MiaoshaUser user,
-                                  @RequestParam("goodsId") long goodsId) {
+                                  @RequestParam("goodsId") long goodsId,
+                                  @RequestParam("verifyCode") int verifyCode) {
         if (user == null) {
             return Result.error(CodeMsg.SESSION_ERROR);
         }
-        String str = Md5Util.md5(UUIDUtil.uuid() + "123456");
-        redisService.set(MiaoshaKey.getMiaoshaPath, "" + user.getId() + "_" + goodsId, str);
-        return Result.success(str);
+        Integer ans = redisService.get(MiaoshaKey.getVerifyCode, user.getId() + "," + goodsId, Integer.class);
+        if (ans == null || ans != verifyCode) {
+            return Result.error(CodeMsg.REQUEST_ILLEGAL);
+        }
+        redisService.delete(MiaoshaKey.getVerifyCode, user.getId() + "," + goodsId);
+        String path = Md5Util.md5(UUIDUtil.uuid() + "123456");
+        redisService.set(MiaoshaKey.getMiaoshaPath, "" + user.getId() + "_" + goodsId, path);
+        return Result.success(path);
+    }
+
+    @GetMapping("/verifyCode")
+    @ResponseBody
+    public Result<String> getVerifyCode(HttpServletResponse response, MiaoshaUser user,
+                                        @RequestParam("goodsId") long goodsId) {
+        if (user == null) {
+            return Result.error(CodeMsg.SESSION_ERROR);
+        }
+        BufferedImage image = miaoshaService.createVerifyCodeImg(user, goodsId);
+        try {
+            OutputStream out = response.getOutputStream();
+            ImageIO.write(image, "JPEG", out);
+            out.flush();
+            out.close();
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error(CodeMsg.MIAOSHA_FAIL);
+        }
     }
 }
